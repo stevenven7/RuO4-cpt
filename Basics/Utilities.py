@@ -905,7 +905,12 @@ def decimaltostr(number,n=5):
     str
         The string representation of the input number.
     '''
-    if isinstance(number,int):
+    if isinstance(number, list):
+        result = []
+        for nu in number:
+            result.append(decimaltostr(nu, n))
+        return '[' + ', '.join(result) + ']'
+    elif isinstance(number,int):
         result=str(number)
     elif isinstance(number,float):
         result=('{:.%sf}'%n).format(number).rstrip('0') if number!=0.0 else '0.0'

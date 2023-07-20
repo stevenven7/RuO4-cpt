@@ -639,14 +639,27 @@ def VCADOS(engine,app):
     engine.rundependences(app.name)
     engine.cache.pop('ptmesh',None)
     erange,kmesh,nk=np.linspace(app.emin,app.emax,app.ne),app.BZ.mesh('k'),app.BZ.rank('k')
-    result=np.zeros((app.ne,2))
+    result = np.zeros((app.ne, 2))
+    result1=np.zeros((app.ne,2))
+    result2 = np.zeros((app.ne, 2))
+    result3 = np.zeros((app.ne, 2))
     for i,omega in enumerate(erange):
-        result[i,0]=omega
-        result[i,1]=-np.trace(engine.mgfmesh(omega+app.mu+app.eta*1j,kmesh),axis1=1,axis2=2).sum().imag/engine.nclopt/nk/np.pi
+        result[i, 0] = omega
+        result[i, 1] = -np.trace(engine.mgfmesh(omega + app.mu + app.eta * 1j, kmesh), axis1=1,
+                                 axis2=2).sum().imag / engine.nclopt / nk / np.pi
+        result1[i,0]=omega
+        result2[i, 0] = omega
+        result3[i, 0] = omega
+        result1[i, 1] = -np.trace(engine.mgfmesh(omega + app.mu + app.eta * 1j, kmesh)[:,:2,:2], axis1=1,
+                                 axis2=2).sum().imag / engine.nclopt / nk / np.pi
+        result2[i, 1] = -np.trace(engine.mgfmesh(omega + app.mu + app.eta * 1j, kmesh)[:, 3:4, 3:4], axis1=1,
+                                  axis2=2).sum().imag / engine.nclopt / nk / np.pi
+        result3[i, 1] = -np.trace(engine.mgfmesh(omega + app.mu + app.eta * 1j, kmesh)[:, 5:6, 5:6], axis1=1,
+                                  axis2=2).sum().imag / engine.nclopt / nk / np.pi
     engine.log<<'Sum of DOS: %s\n'%(sum(result[:,1])*(app.emax-app.emin)/app.ne)
     name='%s_%s'%(engine,app.name)
     if app.savedata: np.savetxt('%s/%s.dat'%(engine.dout,name),result)
-    if app.plot: app.figure('L',result,'%s/%s'%(engine.dout,name))
+    if app.plot: app.figuremb('L',result1,result2,result3,'%s/%s'%(engine.dout,name)) 
     if app.returndata: return result
 
 def VCAFS(engine,app):

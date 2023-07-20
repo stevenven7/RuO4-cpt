@@ -296,11 +296,13 @@ class FockPack(IndexPack):
                         yield self.value,index1,index2
                 else:
                     assert edgr.norbital==sdgr.norbital
-                    for k in range(edgr.nspin):
-                        for j in range(edgr.norbital):
-                            index1=Index(bond.epoint.pid,FID(j,k,enambu))
-                            index2=Index(bond.spoint.pid,FID(j,k,snambu))
-                            yield self.value,index1,index2
+                    for k1 in range(edgr.nspin):
+                        for j1 in range(edgr.norbital):
+                                for j2 in range(edgr.norbital):
+                                    index1 = Index(bond.epoint.pid, FID(j1, k1, enambu))
+                                    index2 = Index(bond.spoint.pid, FID(j2, k1, snambu))
+                                    yield self.value, index1, index2
+
         else:
             return
             yield

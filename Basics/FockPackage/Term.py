@@ -136,13 +136,13 @@ class Quadratic(Term):
         def expansion(bond,config):
             result={}
             if self.neighbour==bond.neighbour:
-                value=self.value*(1 if self.amplitude is None else self.amplitude(bond))
                 for fpack in self.indexpacks(bond) if isinstance(self.indexpacks,Callable) else self.indexpacks:
                     if self.mode=='pr':
                         assert getattr(fpack,'nambus',None) in ((ANNIHILATION,ANNIHILATION),(CREATION,CREATION))
                     else:
                         assert not hasattr(fpack,'nambus')
                     for coeff,index1,index2 in fpack.expand(bond,config[bond.spoint.pid],config[bond.epoint.pid]):
+                        value = self.value * (1 if self.amplitude is None else self.amplitude(bond, config,index1=index1,index2=index2))
                         dagger1,dagger2=index1.replace(nambu=1-index1.nambu),index2.replace(nambu=1-index2.nambu)
                         if self.mode=='st' and index1==dagger2:
                             result[(index1,index2)]=value*coeff/2+result.get((index1,index2),0.0)
@@ -193,7 +193,7 @@ class Quadratic(Term):
         '''
         result=[]
         if self.neighbour==bond.neighbour:
-            value=self.value*(1 if self.amplitude is None else self.amplitude(bond))
+            value=self.value*(1 if self.amplitude is None else self.amplitude(bond,config))
             if np.abs(value)>RZERO:
                 edgr,sdgr=config[bond.epoint.pid],config[bond.spoint.pid]
                 for fpack in self.indexpacks(bond) if isinstance(self.indexpacks,Callable) else self.indexpacks:
@@ -297,27 +297,32 @@ class Hubbard(Term):
         '''
         result=Operators()
         nv,pid,dgr=len(self),bond.epoint.pid,config[bond.epoint.pid]
-        coeff=1 if self.amplitude is None else self.amplitude(bond)
+        coeff=1 if self.amplitude is None else self.amplitude(bond,config)
         if bond.neighbour==0 and self.atom in (None,dgr.atom) and np.abs(coeff)>RZERO:
             assert nv in (1,4) and dgr.nspin==2 and order in ('normal','density')
             expansion=[]
             if nv>=1:
                 for h in range(dgr.norbital):
-                    value=(self.value/2 if nv==1 else self.value[0]/2)*coeff
+                    
                     index1=Index(pid,FID(h,1,CREATION))
                     index2=Index(pid,FID(h,0,CREATION))
                     index3=Index(pid,FID(h,0,ANNIHILATION))
                     index4=Index(pid,FID(h,1,ANNIHILATION))
+                    coeff = 1 if self.amplitude is None else self.amplitude(bond,config,index1=index1,index2=index2)
+                    value = (self.value / 2 if nv == 1 else self.value[0] / 2) * coeff
                     expansion.append((value,index1,index2,index3,index4))
             if nv==4:
                 for h in range(dgr.norbital):
                     for g in range(dgr.norbital):
                         if g!=h:
-                            value=self.value[1]/2*coeff
+                            
                             index1=Index(pid,FID(g,1,CREATION))
                             index2=Index(pid,FID(h,0,CREATION))
                             index3=Index(pid,FID(h,0,ANNIHILATION))
                             index4=Index(pid,FID(g,1,ANNIHILATION))
+                            coeff = 1 if self.amplitude is None else self.amplitude(bond, config, index1=index1,
+                                                                                    index2=index2)
+                            value = self.value[1] / 2 * coeff
                             expansion.append((value,index1,index2,index3,index4))
                 for h in range(dgr.norbital):
                     for g in range(h):

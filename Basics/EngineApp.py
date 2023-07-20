@@ -408,3 +408,46 @@ class App(object):
         if self.show and not self.suspend: plt.pause(App.SUSPEND_TIME)
         if self.savefig: plt.savefig('%s.png'%name)
         plt.close()
+
+    def figuremb(self,mode,data1,data2,data3,name,**options):
+        '''
+        Generate a figure to view the data.
+
+        Parameters
+        ----------
+        mode : 'L','P'
+            'L' for lines and 'P' for pcolor.
+        data : ndarray
+            The data to be viewed.
+        name : str
+            The name of the figure.
+        options : dict
+            Other options.
+        '''
+        assert mode in ('L','P')
+        plt.title(os.path.basename(name))
+        if mode=='L':
+            if options.get('interpolate',False):
+                plt.plot(data[:,0],data[:,1],'r.')
+                X=np.linspace(data[:,0].min(),data[:,0].max(),10*data.shape[0])
+                for i in range(1,data.shape[1]):
+                    tck=interpolate.splrep(data[:,0],data[:,i],k=3)
+                    Y=interpolate.splev(X,tck,der=0)
+                    plt.plot(X,Y,label=options['legend'][i-1] if 'legend' in options else None)
+                if 'legend' in options:
+                    leg=plt.legend(fancybox=True,loc=options.get('legendloc',None))
+                    leg.get_frame().set_alpha(0.5)
+            else:
+                plt.plot(data1[:,0],data1[:,1:],label="data1")
+                plt.plot(data2[:, 0], data2[:, 1:],label="data2")
+                plt.plot(data3[:, 0], data3[:, 1:],label="data3")
+                if 'legend' in options:
+                    leg=plt.legend(options['legend'],fancybox=True,loc=options.get('legendloc',None))
+                    leg.get_frame().set_alpha(0.5)
+        elif mode=='P':
+            plt.colorbar(plt.pcolormesh(data[:,:,0],data[:,:,1],data[:,:,2]))
+            if 'axis' in options: plt.axis(options.get('axis','equal'))
+        if self.show and self.suspend: plt.show()
+        if self.show and not self.suspend: plt.pause(App.SUSPEND_TIME)
+        if self.savefig: plt.savefig('%s.png'%name)
+        plt.close()

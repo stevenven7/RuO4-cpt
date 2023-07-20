@@ -105,7 +105,7 @@ class TBA(Engine):
         result=zeros((nmatrix,nmatrix),dtype=complex128)
         for opt in self.generator.operators:
             phase=1 if len(k)==0 else exp(-1j*inner(k,opt.rcoord))
-            result[opt.seqs]+=opt.value*phase
+            result[opt.seqs] += opt.value * phase
             if len(self.mask)==0:
                 i,j=opt.seqs
                 if i<nmatrix//2 and j<nmatrix//2: result[j+nmatrix//2,i+nmatrix//2]+=-opt.value*conjugate(phase)
